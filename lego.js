@@ -23,6 +23,21 @@ function sortFunctions(funcs) {
 
 }
 
+function makeCopy(collection) {
+    var newCollection = [];
+    for (var i = 0; i < collection.length; i++) {
+        var keys = Object.keys(collection[i]);
+        var newField = {};
+        for (var j = 0; j < keys.length; j++) {
+            var key = keys[j];
+            newField[key] = collection[i][key];
+        }
+        newCollection.push(newField);
+    }
+
+    return newCollection;
+}
+
 /**
  * Запрос к коллекции
  * @param {Array} collection
@@ -30,7 +45,7 @@ function sortFunctions(funcs) {
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var newCollection = collection;
+    var newCollection = makeCopy(collection);
     if (arguments.length === 1) {
         return newCollection;
     }
