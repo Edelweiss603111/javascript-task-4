@@ -44,7 +44,6 @@ exports.query = function (collection) {
     return newCollection;
 };
 
-
 function selectField(collection, fields, i) {
     var newField = {};
     for (var j = 0; j < fields.length; j++) {
@@ -144,7 +143,9 @@ exports.format = function (property, formatter) {
 
     var format = function (collection) {
         for (var contact = 0; contact < collection.length; contact++) {
-            collection[contact][property] = formatter(collection[contact][property]);
+            if (collection[contact][property]) {
+                collection[contact][property] = formatter(collection[contact][property]);
+            }
         }
 
         return collection;
