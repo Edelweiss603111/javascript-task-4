@@ -51,7 +51,9 @@ exports.select = function () {
         collection.forEach(function (person) {
             var newField = {};
             fields.forEach(function (field) {
-                newField[field] = person[field];
+                if (person[field]) {
+                    newField[field] = person[field];
+                }
             });
             newCollection.push(newField);
         });
