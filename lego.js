@@ -19,7 +19,7 @@ function getSortedFunctions(funcs) {
 /**
  * Запрос к коллекции
  * @param {Array} collection
- * @params {...Function} – Функции для запроса
+ * @params {...Function} – Функци для запроса
  * @returns {Array}
  */
 exports.query = function (collection) {
