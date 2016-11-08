@@ -6,36 +6,14 @@
  */
 exports.isStar = false;
 
-var functionsPriority = {
-    'filterIn': 1,
-    'sortBy': 2,
-    'select': 3,
-    'format': 4,
-    'limit': 5
-};
+var functionsPriority = ['filterIn', 'sortBy', 'select', 'format', 'limit'];
 
-function sortFunctions(funcs) {
+function getSortedFunctions(funcs) {
 
     return funcs.sort(function (function1, function2) {
-        return functionsPriority[function1.functionName] <
-        functionsPriority[function2.functionName] ? -1 : 1;
+        return functionsPriority.indexOf(function1.functionName) <
+        functionsPriority.indexOf(function2.functionName) ? -1 : 1;
     });
-
-}
-
-function makeCopy(collection) {
-    var newCollection = [];
-    for (var i = 0; i < collection.length; i++) {
-        var keys = Object.keys(collection[i]);
-        var newField = {};
-        for (var j = 0; j < keys.length; j++) {
-            var key = keys[j];
-            newField[key] = collection[i][key];
-        }
-        newCollection.push(newField);
-    }
-
-    return newCollection;
 }
 
 /**
@@ -45,30 +23,20 @@ function makeCopy(collection) {
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var newCollection = makeCopy(collection);
+    var newCollection = collection.slice();
     if (arguments.length === 1) {
         return newCollection;
     }
-    var argFunctions = [].slice.call(arguments).slice(1);
-    var sortedFunctions = sortFunctions(argFunctions);
-    for (var i = 0; i < sortedFunctions.length; i++) {
-        var sortedFunction = sortedFunctions[i];
+    var operators = [].slice.call(arguments).slice(1);
+    var sortedFunctions = getSortedFunctions(operators);
+    newCollection = sortedFunctions.map(function (sortedFunction) {
         newCollection = sortedFunction(newCollection);
-    }
 
-    return newCollection;
+        return newCollection;
+    });
+
+    return newCollection.pop();
 };
-
-function selectField(collection, fields, i) {
-    var newField = {};
-    for (var j = 0; j < fields.length; j++) {
-        if (collection[i][fields[j]] !== undefined) {
-            newField[fields[j]] = collection[i][fields[j]];
-        }
-    }
-
-    return newField;
-}
 
 /**
  * Выбор полей
@@ -76,13 +44,17 @@ function selectField(collection, fields, i) {
  * @returns {Function}
  */
 exports.select = function () {
-    var fields = arguments;
+    var fields = [].slice.call(arguments);
 
     var select = function (collection) {
         var newCollection = [];
-        for (var i = 0; i < collection.length; i++) {
-            newCollection.push(selectField(collection, fields, i));
-        }
+        collection.forEach(function (person) {
+            var newField = {};
+            fields.forEach(function (field) {
+                newField[field] = person[field];
+            });
+            newCollection.push(newField);
+        });
 
         return newCollection;
     };
@@ -90,18 +62,6 @@ exports.select = function () {
 
     return select;
 };
-
-
-function filterFields(collection, property, values, i) {
-    var newCollection = [];
-    for (var j = 0; j < values.length; j++) {
-        if (collection[i][property] === values[j]) {
-            newCollection.push(collection[i]);
-        }
-    }
-
-    return newCollection;
-}
 
 
 /**
@@ -115,9 +75,15 @@ exports.filterIn = function (property, values) {
 
     var filterIn = function (collection) {
         var newCollection = [];
-        for (var i = 0; i < collection.length; i++) {
-            newCollection = newCollection.concat(filterFields(collection, property, values, i));
-        }
+        collection.forEach(function (person) {
+            var filteredCollection = [];
+            values.forEach(function (value) {
+                if (person[property] === value) {
+                    filteredCollection.push(person);
+                }
+            });
+            newCollection = newCollection.concat(filteredCollection);
+        });
 
         return newCollection;
     };
@@ -179,12 +145,6 @@ exports.limit = function (count) {
     console.info(count);
 
     var limit = function (collection) {
-        if (count > collection.length) {
-            count = collection.length;
-        }
-        if (count < 0) {
-            return [];
-        }
 
         return collection.slice(0, count);
     };
