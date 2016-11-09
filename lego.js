@@ -29,13 +29,12 @@ exports.query = function (collection) {
     }
     var operators = [].slice.call(arguments).slice(1);
     var sortedFunctions = getSortedFunctions(operators);
-    newCollection = sortedFunctions.map(function (sortedFunction) {
+    for (var i = 0; i < sortedFunctions.length; i++) {
+        var sortedFunction = sortedFunctions[i];
         newCollection = sortedFunction(newCollection);
+    }
 
-        return newCollection;
-    });
-
-    return newCollection.pop();
+    return newCollection;
 };
 
 /**
