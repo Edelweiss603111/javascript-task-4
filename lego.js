@@ -19,22 +19,24 @@ function getSortedFunctions(funcs) {
 /**
  * Запрос к коллекции
  * @param {Array} collection
- * @params {...Function} – Функци для запроса
+ * @params {...Function} – Функции для запроса
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var newCollection = collection.slice();
+    var newCollection = JSON.stringify(collection);
+    newCollection = JSON.parse(newCollection);
     if (arguments.length === 1) {
         return newCollection;
     }
     var operators = [].slice.call(arguments).slice(1);
     var sortedFunctions = getSortedFunctions(operators);
-    for (var i = 0; i < sortedFunctions.length; i++) {
-        var sortedFunction = sortedFunctions[i];
+    newCollection = sortedFunctions.map(function (sortedFunction) {
         newCollection = sortedFunction(newCollection);
-    }
 
-    return newCollection;
+        return newCollection;
+    });
+
+    return newCollection.pop();
 };
 
 /**
@@ -124,11 +126,11 @@ exports.format = function (property, formatter) {
     console.info(property, formatter);
 
     var format = function (collection) {
-        for (var contact = 0; contact < collection.length; contact++) {
-            if (collection[contact][property]) {
-                collection[contact][property] = formatter(collection[contact][property]);
+        collection.forEach(function (contact) {
+            if (contact[property]) {
+                contact[property] = formatter(contact[property]);
             }
-        }
+        });
 
         return collection;
     };
