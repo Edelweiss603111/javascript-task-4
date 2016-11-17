@@ -11,8 +11,9 @@ var functionsPriority = ['filterIn', 'sortBy', 'select', 'format', 'limit'];
 function getSortedFunctions(funcs) {
 
     return funcs.sort(function (function1, function2) {
-        return functionsPriority.indexOf(function1.functionName) <
-        functionsPriority.indexOf(function2.functionName) ? -1 : 1;
+
+        return functionsPriority.indexOf(function1.name) <
+        functionsPriority.indexOf(function2.name) ? -1 : 1;
     });
 }
 
@@ -23,8 +24,7 @@ function getSortedFunctions(funcs) {
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var newCollection = JSON.stringify(collection);
-    newCollection = JSON.parse(newCollection);
+    var newCollection = JSON.parse(JSON.stringify(collection));
     if (arguments.length === 1) {
         return newCollection;
     }
@@ -36,7 +36,7 @@ exports.query = function (collection) {
         return newCollection;
     });
 
-    return newCollection.pop();
+    return newCollection[newCollection.length - 1];
 };
 
 /**
@@ -47,7 +47,7 @@ exports.query = function (collection) {
 exports.select = function () {
     var fields = [].slice.call(arguments);
 
-    var select = function (collection) {
+    var select = function select(collection) {
         var newCollection = [];
         collection.forEach(function (person) {
             var newField = {};
@@ -61,7 +61,6 @@ exports.select = function () {
 
         return newCollection;
     };
-    select.functionName = 'select';
 
     return select;
 };
@@ -76,7 +75,7 @@ exports.select = function () {
 exports.filterIn = function (property, values) {
     console.info(property, values);
 
-    var filterIn = function (collection) {
+    var filterIn = function filterIn(collection) {
         var newCollection = [];
         collection.forEach(function (person) {
             var filteredCollection = [];
@@ -90,7 +89,6 @@ exports.filterIn = function (property, values) {
 
         return newCollection;
     };
-    filterIn.functionName = 'filterIn';
 
     return filterIn;
 };
@@ -105,13 +103,20 @@ exports.sortBy = function (property, order) {
     console.info(property, order);
 
     var sorter = function (i, j) {
-        return order === 'asc' ? i[property] > j[property] : i[property] < j[property];
+        if (i[property] === j[property]) {
+            return 0;
+        }
+        if (order === 'asc') {
+
+            return i[property] < j[property] ? -1 : 1;
+        }
+
+        return i[property] > j[property] ? -1 : 1;
     };
 
-    var sortBy = function (collection) {
+    var sortBy = function sortBy(collection) {
         return collection.sort(sorter);
     };
-    sortBy.functionName = 'sortBy';
 
     return sortBy;
 };
@@ -125,7 +130,7 @@ exports.sortBy = function (property, order) {
 exports.format = function (property, formatter) {
     console.info(property, formatter);
 
-    var format = function (collection) {
+    var format = function format(collection) {
         collection.forEach(function (contact) {
             if (contact[property]) {
                 contact[property] = formatter(contact[property]);
@@ -134,7 +139,6 @@ exports.format = function (property, formatter) {
 
         return collection;
     };
-    format.functionName = 'format';
 
     return format;
 };
@@ -147,11 +151,10 @@ exports.format = function (property, formatter) {
 exports.limit = function (count) {
     console.info(count);
 
-    var limit = function (collection) {
+    var limit = function limit(collection) {
 
         return collection.slice(0, count);
     };
-    limit.functionName = 'limit';
 
     return limit;
 };
